@@ -15,7 +15,7 @@
             overflow: hidden;
         }
     </style>
-    <script src="http://www.yanhuangxueyuan.com/threejs/build/three.js"></script>
+    <script src="./js/three.js"></script>
     <script src="./js/OrbitControls.js"></script>
 </head>
 
@@ -24,16 +24,41 @@
         //创建场景对象
         var scene = new THREE.Scene()
         //创建网络模型
-        var geometry = new THREE.BoxGeometry(100, 100, 100) //创建一个球形集合体
-        var material = new THREE.MeshLambertMaterial({ color: '#333' })
-        var mesh = new THREE.Mesh(geometry, material)
-        scene.add(mesh) // 网络模型加到场景
+        var textureLoader = new THREE.TextureLoader();
+        var materialNormalMap = new THREE.MeshPhongMaterial({
+            specular: 0x333333,
+            shininess: 15,
+            map: textureLoader.load("http://tlrs.oss-cn-beijing.aliyuncs.com/.jpg/20210604/7fce4c583f55465f9b47fef8cd6d25d1.jpg"),
+            specularMap: textureLoader.load("http://tlrs.oss-cn-beijing.aliyuncs.com/.jpg/20210604/8a3a5e26f83b40aaa623d4a5a10649a8.jpg"),
+            normalMap: textureLoader.load("http://tlrs.oss-cn-beijing.aliyuncs.com/.jpg/20210604/e1bce5b9b1234f5badf1f0f8323a7a22.jpg"),
+            normalScale: new THREE.Vector2(0.85, 0.85)
+        });
+        geometry = new THREE.SphereGeometry(100, 100, 100);
+        meshPlanet = new THREE.Mesh(geometry, materialNormalMap);
+        meshPlanet.material.map.minFilter = THREE.LinearFilter;
+        meshPlanet.rotation.y = 0;
+        meshPlanet.rotation.z = 0.41;
+        scene.add(meshPlanet);
+        var geometry1 = new THREE.SphereGeometry(40, 40, 40)
+        var material1 = new THREE.MeshLambertMaterial({ color: '#fff' })
+        var mesh1 = new THREE.Mesh(geometry1, material1)
+
+        scene.add(mesh1)
+
+        var geometry = new THREE.Geometry();
+        var curve = new THREE.EllipseCurve(0,0,160,220);
+        var points = curve.getPoints(100);
+        geometry.setFromPoints(points);
+        var material = new THREE.LineBasicMaterial({color: 0xff0000});
+        var line = new THREE.Line(geometry, material);
+        line.rotateOnAxis(new THREE.Vector3(10,5,3),360)
+        scene.add(line)
         //光源设置
-        var point = new THREE.PointLight(0xffffff)
-        point.position.set(200, 400, 300)
+        var point = new THREE.PointLight('#fff')
+        point.position.set(-200, 200, 400)
         scene.add(point)
         //环境光
-        var ambient = new THREE.AmbientLight(0x444444)
+        var ambient = new THREE.AmbientLight("rgb(110, 110, 110)")
         scene.add(ambient)
         //设置
         var width = window.innerWidth
@@ -41,29 +66,32 @@
         var k = width / height
         var s = 200
         var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000)
-        camera.position.set(50, 300, 200)
+        camera.position.set(-200, 200, 400)
         camera.lookAt(scene.position)
 
         var renderer = new THREE.WebGLRenderer()
         renderer.setSize(width, height)
-        renderer.setClearColor(0xb9d3ff, 1)
+        renderer.setClearColor(0x000000, 1)
         document.body.appendChild(renderer.domElement)
         function render() {
             renderer.render(scene, camera)
         }
         function animation() {
             render()
-            mesh.rotateY(0.01)
+            meshPlanet.rotateY(0.001)
+            mesh1.rotateZ(0.01)
+            mesh1.rotateX(0.01)
+            var timer = Date.now() * 0.001;
+            mesh1.position.x = Math.cos(timer) * 300;
+            mesh1.position.z = Math.sin(timer) * 300;
+            meshPlanet.position.x = Math.cos(timer) * 10;
+            meshPlanet.position.z = Math.sin(timer) * 10;
+            mesh1.lookAt(scene.position)
+            meshPlanet.lookAt(scene.position);
             requestAnimationFrame(animation)
         }
-        animation() 
+        animation()
         var controls = new THREE.OrbitControls(camera)
-        // controls.addEventListener('change', render)
-        // setInterval(() => {
-        //     mesh.rotateY(0.01)
-        //     renderer.render(scene, camera)
-        // }, 20);
-        //renderer解析方法
     </script>
 </body>
 
